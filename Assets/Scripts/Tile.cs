@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    public Adjacency.Type upAdjacency;
-    public Adjacency.Type leftAdjacency;
-    public Adjacency.Type downAdjacency;
-    public Adjacency.Type rightAdjacency;
+    public Adjacency upAdjacency;
+    public Adjacency leftAdjacency;
+    public Adjacency downAdjacency;
+    public Adjacency rightAdjacency;
 
     public float weight = 1;
     

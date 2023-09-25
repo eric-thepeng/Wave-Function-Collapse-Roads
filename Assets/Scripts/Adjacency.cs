@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Adjacency
+[Serializable]public class Adjacency
 {
     public enum Type
     {
@@ -12,4 +13,7 @@ public class Adjacency
         Pond,
         Bug
     }
+
+    public Type Type1;
+    public Type Type2;
 }
