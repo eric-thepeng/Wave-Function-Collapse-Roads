@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class Task1Generator : MonoBehaviour
 {
@@ -258,11 +260,47 @@ public class Task1Generator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /* press r to remake the whole scene
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+        }*/
+
+        if (Input.GetKeyDown(KeyCode.Q))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.W))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.E))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.R))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.T))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.Y))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.U))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.I))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.O))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.P))RebalanceByInput();
+        
+        if (Input.GetKeyDown(KeyCode.A))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.S))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.D))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.F))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.G))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.H))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.J))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.K))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.L))RebalanceByInput();
+        
+        if (Input.GetKeyDown(KeyCode.Z))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.X))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.C))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.V))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.B))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.N))RebalanceByInput();
+        if (Input.GetKeyDown(KeyCode.M))RebalanceByInput();
     }
+
+    void RebalanceByInput()
+    {
+        StartRebalance(tileGrid[Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)]);
+    }
+    
     void PropogateNeighbors(Vector2Int node, int observedValue)
     {
         PropogateTo(node, new Vector2Int(-1, 0), _tileset[observedValue]);
