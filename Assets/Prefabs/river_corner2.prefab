@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7498506879014817496
+--- !u!1 &1560988997116088651
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,23 +8,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5393399315500115026}
-  - component: {fileID: 8368358424873998196}
-  - component: {fileID: 6933721476293866515}
+  - component: {fileID: 7936721813918695439}
+  - component: {fileID: 3981149903271334555}
+  - component: {fileID: 4598154669983397121}
   m_Layer: 0
-  m_Name: pond_cornerIn
+  m_Name: river_corner2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5393399315500115026
+--- !u!4 &7936721813918695439
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7498506879014817496}
+  m_GameObject: {fileID: 1560988997116088651}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -33,13 +33,13 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &8368358424873998196
+--- !u!212 &3981149903271334555
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7498506879014817496}
+  m_GameObject: {fileID: 1560988997116088651}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -74,38 +74,38 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8129e84af5c8b42e8b26ee11564bb76f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5921c781163074fa3a28c9308a912f89, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.16, y: 0.16}
+  m_Size: {x: 0.8888889, y: 0.8888889}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &6933721476293866515
+--- !u!114 &4598154669983397121
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7498506879014817496}
+  m_GameObject: {fileID: 1560988997116088651}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84cd54077a90c46fcad34d391e02206e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  front1: 1
-  front2: 1
-  left1: 1
+  front1: 0
+  front2: 0
+  left1: 0
   left2: 0
-  back1: 0
-  back2: 1
-  right1: 1
-  right2: 1
+  back1: 2
+  back2: 2
+  right1: 2
+  right2: 2
   weight: 1
-  prefab: {fileID: 7498506879014817496}
+  prefab: {fileID: 1560988997116088651}
   rotationIndex: 0
   doesNotRotate: 0

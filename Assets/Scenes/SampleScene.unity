@@ -162,6 +162,11 @@ MonoBehaviour:
   - {fileID: 8841358626902306005, guid: 02f354b53b3d447d8a235f437a81b8f9, type: 3}
   - {fileID: 7082435620320189119, guid: bf10031fa7df248b2bf0c50e7e1c25bd, type: 3}
   - {fileID: 1560988997116088651, guid: f847778b6f5744cc9bdce014b1a0ffa6, type: 3}
+  - {fileID: 1560988997116088651, guid: 1f92b7cfd04744503955c8b1d4287924, type: 3}
+  - {fileID: 1560988997116088651, guid: ad9d26149a59443d489d16312cbe13e6, type: 3}
+  - {fileID: 1560988997116088651, guid: c364c20fd91994af6b41833528503005, type: 3}
+  - {fileID: 1560988997116088651, guid: 2f71141f24c4c4a4bb21432fd5c8bfa8, type: 3}
+  - {fileID: 1560988997116088651, guid: 158bfa012de4c4d2fa85313b398a490e, type: 3}
 --- !u!4 &445085557
 Transform:
   m_ObjectHideFlags: 0
@@ -243,7 +248,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

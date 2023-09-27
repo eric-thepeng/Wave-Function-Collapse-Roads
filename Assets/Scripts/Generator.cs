@@ -24,8 +24,8 @@ public class Generator : MonoBehaviour
         }
     }
 
-    const int GRID_WIDTH = 18;
-    const int GRID_HEIGHT = 10;
+    const int GRID_WIDTH = 19;
+    const int GRID_HEIGHT = 11;
     private const float GRID_SIZE = 1f;
     const int MAX_TRIES = 30;
     
@@ -177,16 +177,16 @@ public class Generator : MonoBehaviour
         spToCheck.Refill(allProtoData);
 
         PropogateTo(orgCoord, direction, protoDataGrid[orgCoord.x, orgCoord.y]);
-        if (existCell(newCoord + new Vector2Int(-1, 0))) { 
+        if (ExistCellAndCanChange(newCoord + new Vector2Int(-1, 0))) { 
             PropogateTo(newCoord + new Vector2Int(-1, 0), new Vector2Int(1, 0), protoDataGrid[(newCoord + new Vector2Int(-1, 0)).x, (newCoord + new Vector2Int(-1, 0)).y]); 
         }
-        if (existCell(newCoord + new Vector2Int(1, 0))) { 
+        if (ExistCellAndCanChange(newCoord + new Vector2Int(1, 0))) { 
             PropogateTo(newCoord + new Vector2Int(1, 0), new Vector2Int(-1, 0), protoDataGrid[(newCoord + new Vector2Int(1, 0)).x, (newCoord + new Vector2Int(1, 0)).y]); 
         }
-        if (existCell(newCoord + new Vector2Int(0, -1))) {
+        if (ExistCellAndCanChange(newCoord + new Vector2Int(0, -1))) {
             PropogateTo(newCoord + new Vector2Int(0, -1), new Vector2Int(0, 1), protoDataGrid[(newCoord + new Vector2Int(0, -1)).x, (newCoord + new Vector2Int(0, -1)).y]);
         }
-        if (existCell(newCoord + new Vector2Int(0, 1))) { 
+        if (ExistCellAndCanChange(newCoord + new Vector2Int(0, 1))) { 
             PropogateTo(newCoord + new Vector2Int(0, 1), new Vector2Int(0, -1), protoDataGrid[(newCoord + new Vector2Int(0, 1)).x, (newCoord + new Vector2Int(0, 1)).y]);
         }
         
@@ -226,9 +226,10 @@ public class Generator : MonoBehaviour
 
     }
 
-    bool existCell(Vector2Int coord)
+    bool ExistCellAndCanChange(Vector2Int coord)
     {
         if (coord.x < 0 || coord.y < 0 || coord.x >= GRID_WIDTH || coord.y >= GRID_HEIGHT) return false;
+        //if (Math.Abs(coord.x - (GRID_HEIGHT / 2)) <= 1 || Math.Abs(coord.y - (GRID_WIDTH / 2)) <= 1) return false;
         return true;
     }
 
