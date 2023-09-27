@@ -47,6 +47,7 @@ public class SuperPosition
     public Proto.ProtoData OverrideObserve(Proto.ProtoData ppd)
     {
         _possibleValues = new List<Proto.ProtoData> { ppd };
+        _observed = true;
         return ppd;
     }
 

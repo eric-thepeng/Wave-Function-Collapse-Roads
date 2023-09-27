@@ -16,6 +16,7 @@ public class Proto : MonoBehaviour
     public GameObject prefab;
     public float rotationIndex = 0;
     public bool doesNotRotate = false;
+    public int specialIndex = 0;
     
     public struct AdjacencySet
     {
@@ -93,11 +94,13 @@ public class Proto : MonoBehaviour
         public float weight;
         public GameObject prefab;
         public float rotationIndex;
+        public int specialIndex;
         public ProtoData(Proto copyFrom, int rotateTimes)//rotate clockwise
         {
             prefab = copyFrom.prefab;
             weight = copyFrom.weight;
             rotationIndex = rotateTimes;
+            specialIndex = copyFrom.specialIndex;
 
 
             front1 = copyFrom.front1;

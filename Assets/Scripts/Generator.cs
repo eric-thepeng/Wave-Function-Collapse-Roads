@@ -230,6 +230,13 @@ public class Generator : MonoBehaviour
     {
         if (coord.x < 0 || coord.y < 0 || coord.x >= GRID_WIDTH || coord.y >= GRID_HEIGHT) return false;
         //if (Math.Abs(coord.x - (GRID_HEIGHT / 2)) <= 1 || Math.Abs(coord.y - (GRID_WIDTH / 2)) <= 1) return false;
+        for (int x = GRID_WIDTH / 2 - 1; x < GRID_WIDTH / 2 + 2; x++)
+        {
+            for (int y = GRID_HEIGHT / 2 - 1; y < GRID_HEIGHT / 2 + 2; y++)
+            {
+                if (coord.x == x && coord.y == y) return false;
+            }
+        }
         return true;
     }
 
@@ -301,6 +308,15 @@ public class Generator : MonoBehaviour
         spGrid = new SuperPosition[GRID_WIDTH, GRID_HEIGHT];
         tileGrid = new GameObject[GRID_WIDTH, GRID_HEIGHT];
         protoDataGrid = new Proto.ProtoData[GRID_WIDTH, GRID_HEIGHT];
+        
+        Proto.ProtoData rockPPD = null, soilPPD = null;
+        foreach (Proto.ProtoData ppd in allProtoData)
+        {
+            if (ppd.specialIndex == 1) rockPPD = ppd;
+            if (ppd.specialIndex == 2) soilPPD = ppd;
+        }
+        
+        
         for (int x = 0; x < GRID_WIDTH; x++)
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
@@ -308,6 +324,31 @@ public class Generator : MonoBehaviour
                 spGrid[x, y] = new SuperPosition(allProtoData);
             }
         }
+        
+        for (int x = GRID_WIDTH / 2 - 1; x < GRID_WIDTH / 2 + 2; x++)
+        {
+            for (int y = GRID_HEIGHT / 2 - 1; y < GRID_HEIGHT / 2 + 2; y++)
+            {
+                if (x == GRID_WIDTH / 2 && y == GRID_HEIGHT / 2)
+                {
+                    protoDataGrid[x, y] = spGrid[x, y].OverrideObserve(rockPPD);
+                }
+                else
+                {
+                    protoDataGrid[x, y] = spGrid[x, y].OverrideObserve(soilPPD);
+                }
+            }
+        }
+
+        for (int x = GRID_WIDTH / 2 - 1; x < GRID_WIDTH / 2 + 2; x++)
+        {
+            for (int y = GRID_HEIGHT / 2 - 1; y < GRID_HEIGHT / 2 + 2; y++)
+            {
+                //if(x == GRID_WIDTH / 2 && y == GRID_HEIGHT / 2) continue;
+                PropogateNeighbors(new Vector2Int(x,y),spGrid[x,y].GetObservedValue());
+            }
+        }
+        
     }
 
     // Update is called once per frame
@@ -378,7 +419,16 @@ public class Generator : MonoBehaviour
         // Don't forget to check for out of bounds
 
         Vector2Int newNode = node + direction;
-        if (newNode.x < 0 || newNode.y < 0 || newNode.x >= GRID_WIDTH || newNode.y >= GRID_HEIGHT) return;
+
+        if (ExistCellAndCanChange(newNode))
+        {
+            
+        }
+        else
+        {
+            return;
+        }
+
         //SuperPosition spOrigional = _grid[node.x, node.y];
         SuperPosition spToCheck = spGrid[newNode.x, newNode.y];
         if (spToCheck.IsObserved()) return;
