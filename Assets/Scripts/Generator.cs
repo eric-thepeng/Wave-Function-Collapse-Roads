@@ -24,9 +24,10 @@ public class Generator : MonoBehaviour
         }
     }
 
-    const int GRID_WIDTH = 16;
+    const int GRID_WIDTH = 18;
     const int GRID_HEIGHT = 10;
-    const int MAX_TRIES = 10;
+    private const float GRID_SIZE = 1f;
+    const int MAX_TRIES = 30;
     
     [SerializeField] private List<GameObject> allProtoPrefabs;
     private List<Proto> allProtos = new List<Proto>();
@@ -44,7 +45,6 @@ public class Generator : MonoBehaviour
         do
         {
             tries++;
-            print("trying " + tries);
             result = RunWFC();
         }
         while (result == false && tries < MAX_TRIES);
@@ -247,7 +247,8 @@ public class Generator : MonoBehaviour
     public GameObject SpawnTile(Vector2Int coord, Proto.ProtoData ppd)
     {
         GameObject tile = Instantiate(ppd.prefab);
-        tile.transform.position = tile.transform.position + new Vector3(coord.x, coord.y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
+        tile.transform.position = tile.transform.position + new Vector3(coord.x * GRID_SIZE, coord.y * GRID_SIZE, 0f) - GRID_SIZE * new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
+        tile.transform.localScale = new Vector3(GRID_SIZE, GRID_SIZE, 1);
         tile.transform.Rotate(new Vector3(0, 0, 1), -90 * ppd.rotationIndex);
         tileGrid[coord.x, coord.y] = tile;
         protoDataGrid[coord.x, coord.y] = ppd;
@@ -312,7 +313,7 @@ public class Generator : MonoBehaviour
     void Update()
     {
          //press r to remake the whole scene
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.Return))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
