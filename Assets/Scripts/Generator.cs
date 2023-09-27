@@ -24,8 +24,8 @@ public class Generator : MonoBehaviour
         }
     }
 
-    const int GRID_WIDTH = 17;
-    const int GRID_HEIGHT = 9;
+    const int GRID_WIDTH = 16;
+    const int GRID_HEIGHT = 10;
     const int MAX_TRIES = 10;
     
     [SerializeField] private List<GameObject> allProtoPrefabs;
@@ -44,6 +44,7 @@ public class Generator : MonoBehaviour
         do
         {
             tries++;
+            print("trying " + tries);
             result = RunWFC();
         }
         while (result == false && tries < MAX_TRIES);
@@ -66,7 +67,7 @@ public class Generator : MonoBehaviour
         while (DoUnobservedNodesExist())
         {
             Vector2Int node = GetNextUnobservedNode();
-            if (node.x == -1)
+            if (node.x == -1 || !spGrid[node.x,node.y].HasPossibilities())
             {
                 return false; //failure
             }
@@ -108,9 +109,10 @@ public class Generator : MonoBehaviour
         }
     }
 
-    public void StartRebalance(Proto.ProtoData ppd)
+    public void StartRebalance(Vector2Int coord)
     {
         //get coord of ppd
+        /*
         Vector2Int coord = new Vector2Int(0,0);
         for (int x = 0; x < GRID_WIDTH; x++)
         {
@@ -122,8 +124,8 @@ public class Generator : MonoBehaviour
                     break;
                 }
             }
-        }
-        
+        }*/
+
         //change that ppd to random
         int changeTo = 0;
         do { changeTo = UnityEngine.Random.Range(0, allProtoData.Count); } while (allProtoData[changeTo] == spGrid[coord.x, coord.y].GetObservedValue());
@@ -192,7 +194,6 @@ public class Generator : MonoBehaviour
         if (spToCheck.HasPossibilities())
         {
             protoDataGrid[newCoord.x, newCoord.y] = spToCheck.Observe();
-            
             ReplaceTile(newCoord, spToCheck.GetObservedValue());
         }
         else
@@ -202,10 +203,10 @@ public class Generator : MonoBehaviour
             protoDataGrid[newCoord.x, newCoord.y] = spToCheck.Observe();
             ReplaceTile(newCoord, spToCheck.GetObservedValue());
 
-            PropogateRebalance(newCoord, new Vector2Int(-1, 0), protoDataGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(1, 0), protoDataGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(0, -1), protoDataGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(0, 1), protoDataGrid[newCoord.x, newCoord.y]);
+            if(direction != new Vector2Int(1,0))PropogateRebalance(newCoord, new Vector2Int(-1, 0), protoDataGrid[newCoord.x, newCoord.y]);
+            if(direction != new Vector2Int(-1,0))PropogateRebalance(newCoord, new Vector2Int(1, 0), protoDataGrid[newCoord.x, newCoord.y]);
+            if(direction != new Vector2Int(0,1))PropogateRebalance(newCoord, new Vector2Int(0, -1), protoDataGrid[newCoord.x, newCoord.y]);
+            if(direction != new Vector2Int(0,-1))PropogateRebalance(newCoord, new Vector2Int(0, 1), protoDataGrid[newCoord.x, newCoord.y]);
         }
 
 
@@ -237,8 +238,7 @@ public class Generator : MonoBehaviour
         //print("replacing " + coord);
         Destroy(tileGrid[coord.x, coord.y].gameObject);
 
-        GameObject tile = GameObject.Instantiate(ppd.prefab);
-        tile.transform.position = tile.transform.position + new Vector3(coord.x, coord.y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
+        GameObject tile = SpawnTile(coord, ppd);
         tileGrid[coord.x, coord.y] = tile;
         protoDataGrid[coord.x, coord.y] = spGrid[coord.x, coord.y].OverrideObserve(ppd);
         return ppd;
@@ -248,7 +248,7 @@ public class Generator : MonoBehaviour
     {
         GameObject tile = Instantiate(ppd.prefab);
         tile.transform.position = tile.transform.position + new Vector3(coord.x, coord.y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
-        tile.transform.Rotate(new Vector3(0, 0, -1), 90 * ppd.rotationIndex);
+        tile.transform.Rotate(new Vector3(0, 0, 1), -90 * ppd.rotationIndex);
         tileGrid[coord.x, coord.y] = tile;
         protoDataGrid[coord.x, coord.y] = ppd;
         spGrid[coord.x, coord.y].OverrideObserve(ppd);
@@ -348,8 +348,9 @@ public class Generator : MonoBehaviour
     }
 
     void RebalanceByInput()
-    {
-        StartRebalance(protoDataGrid[Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)]);
+    { 
+        StartRebalance(new Vector2Int(Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)));
+        //StartRebalance(new Vector2Int(0,0));
     }
     
     void PropogateNeighbors(Vector2Int node, Proto.ProtoData observedValue)
@@ -382,28 +383,43 @@ public class Generator : MonoBehaviour
 
         if (direction == new Vector2Int(0, 1))
         {
-            foreach (Proto.ProtoData ppd in allProtoData)
+            for (int i = spToCheck.RemainPossibleValues().Count - 1; i >= 0; i--)
             {
-                if (ppd.front1 != mustWorkAdjacentTo.back2 && ppd.front2 != mustWorkAdjacentTo.back1) spToCheck.RemovePossibleValue(ppd);
+                if (spToCheck.RemainPossibleValues()[i].front1 != mustWorkAdjacentTo.back2 || spToCheck.RemainPossibleValues()[i].front2 != mustWorkAdjacentTo.back1) spToCheck.RemovePossibleValue(spToCheck.RemainPossibleValues()[i]);
+            }
+            //foreach (Proto.ProtoData ppd in allProtoData)
+            {
+              //  if (ppd.front1 != mustWorkAdjacentTo.back2 || ppd.front2 != mustWorkAdjacentTo.back1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else if (direction == new Vector2Int(1, 0)) {
-            foreach (Proto.ProtoData ppd in allProtoData)
+            for (int i = spToCheck.RemainPossibleValues().Count - 1; i >= 0; i--)
             {
-                if (ppd.left1 != mustWorkAdjacentTo.right2 && ppd.left2 != mustWorkAdjacentTo.right1) spToCheck.RemovePossibleValue(ppd);
+                if (spToCheck.RemainPossibleValues()[i].left1 != mustWorkAdjacentTo.right2 || spToCheck.RemainPossibleValues()[i].left2 != mustWorkAdjacentTo.right1) spToCheck.RemovePossibleValue(spToCheck.RemainPossibleValues()[i]);
+            }
+            //foreach (Proto.ProtoData ppd in allProtoData)
+            {
+             //   if (ppd.left1 != mustWorkAdjacentTo.right2 || ppd.left2 != mustWorkAdjacentTo.right1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else if (direction == new Vector2Int(0, -1)) {
-            
-            foreach (Proto.ProtoData ppd in allProtoData)
+            for (int i = spToCheck.RemainPossibleValues().Count - 1; i >= 0; i--)
             {
-                if (ppd.back1 != mustWorkAdjacentTo.front2 && ppd.back2 != mustWorkAdjacentTo.front1) spToCheck.RemovePossibleValue(ppd);
+                if (spToCheck.RemainPossibleValues()[i].back1 != mustWorkAdjacentTo.front2 || spToCheck.RemainPossibleValues()[i].back2 != mustWorkAdjacentTo.front1) spToCheck.RemovePossibleValue(spToCheck.RemainPossibleValues()[i]);
+            }
+            //foreach (Proto.ProtoData ppd in allProtoData)
+            {
+               // if (ppd.back1 != mustWorkAdjacentTo.front2 || ppd.back2 != mustWorkAdjacentTo.front1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else {
-            foreach (Proto.ProtoData ppd in allProtoData)
+            for (int i = spToCheck.RemainPossibleValues().Count - 1; i >= 0; i--)
             {
-                if (ppd.right1 != mustWorkAdjacentTo.left2 && ppd.right2 != mustWorkAdjacentTo.left1) spToCheck.RemovePossibleValue(ppd);
+                if (spToCheck.RemainPossibleValues()[i].right1 != mustWorkAdjacentTo.left2 || spToCheck.RemainPossibleValues()[i].right2 != mustWorkAdjacentTo.left1) spToCheck.RemovePossibleValue(spToCheck.RemainPossibleValues()[i]);
+            }
+            //foreach (Proto.ProtoData ppd in allProtoData)
+            {
+             //   if (ppd.right1 != mustWorkAdjacentTo.left2 || ppd.right2 != mustWorkAdjacentTo.left1) spToCheck.RemovePossibleValue(ppd);
             }
             /*
             for (int i = 0; i < _tileset.Count; i++)
@@ -426,7 +442,6 @@ public class Generator : MonoBehaviour
 
     Vector2Int GetNextUnobservedNode()
     {
-        // Your code for 1-a goes here:
         int minPossibleAmount = 2147483646;
         Vector2Int minPossibleCoord = new Vector2Int(0, 0);
         for (int x = 0; x < GRID_WIDTH; x++)
