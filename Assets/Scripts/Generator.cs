@@ -8,16 +8,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-public class Task1Generator : MonoBehaviour
+public class Generator : MonoBehaviour
 {
 
-    static Task1Generator instance;
-    public static Task1Generator i
+    static Generator instance;
+    public static Generator i
     {
         get {
             if (instance == null)
             {
-                instance = FindObjectOfType<Task1Generator>();
+                instance = FindObjectOfType<Generator>();
             }
             
             return instance; 
@@ -27,10 +27,14 @@ public class Task1Generator : MonoBehaviour
     const int GRID_WIDTH = 17;
     const int GRID_HEIGHT = 9;
     const int MAX_TRIES = 10;
-    [SerializeField] List<Tile> _tileset;
-    SuperPosition[,] _grid;
-    Tile[,] tileGrid;
-    List<Vector2Int> spawnOrder = new List<Vector2Int>();
+    
+    [SerializeField] private List<GameObject> allProtoPrefabs;
+    private List<Proto> allProtos = new List<Proto>();
+    private List<Proto.ProtoData> allProtoData = new List<Proto.ProtoData>();
+    
+    SuperPosition[,] spGrid;
+    private GameObject[,] tileGrid;
+    Proto.ProtoData[,] protoDataGrid;
 
     // Start is called before the first frame update
     void Start()
@@ -57,8 +61,8 @@ public class Task1Generator : MonoBehaviour
 
     bool RunWFC()
     {
+        GenerateProtos();
         InitGrid();
-        spawnOrder = new List<Vector2Int>();
         while (DoUnobservedNodesExist())
         {
             Vector2Int node = GetNextUnobservedNode();
@@ -67,109 +71,141 @@ public class Task1Generator : MonoBehaviour
                 return false; //failure
             }
 
-            int observedValue = Observe(node);
+            Proto.ProtoData observedValue = Observe(node);
+            protoDataGrid[node.x, node.y] = observedValue;
             PropogateNeighbors(node, observedValue);
         }
 
         return true; //success
     }
+    
+    public void GenerateProtos()
+    {
+        foreach (GameObject protoPrefab in allProtoPrefabs)
+        {
+            allProtos.Add(protoPrefab.GetComponent<Proto>());
+        }
+        allProtoData.Clear();
+        foreach (Proto proto in allProtos)
+        {
+            foreach(Proto.ProtoData ppd in proto.GetAllProtoDataVariations())
+            {
+                allProtoData.Add(ppd);
+            }
+        }
+    }
 
     void DrawTiles() {
-        StartCoroutine(DrawTilesRec());
-        /*
+        //StartCoroutine(DrawTilesRec());
+        
         for (int x = 0; x < GRID_WIDTH; x++)
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
             {
-                GameObject tile = GameObject.Instantiate(_tileset[_grid[x, y].GetObservedValue()].gameObject);
-                tile.transform.position = tile.transform.position + new Vector3(x, y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
+                GameObject tile = SpawnTile(new Vector2Int(x,y), protoDataGrid[x, y]); //= GameObject.Instantiate(_tileset[_grid[x, y].GetObservedValue()].gameObject);
+                //tile.transform.position = tile.transform.position + new Vector3(x, y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
             }
-        }*/
+        }
     }
 
-    public void StartRebalance(Tile t)
+    public void StartRebalance(Proto.ProtoData ppd)
     {
+        //get coord of ppd
         Vector2Int coord = new Vector2Int(0,0);
         for (int x = 0; x < GRID_WIDTH; x++)
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
             {
-                if (tileGrid[x, y] == t)
+                if (protoDataGrid[x, y] == ppd)
                 {
                     coord = new Vector2Int(x, y);
                     break;
                 }
             }
         }
+        
+        //change that ppd to random
         int changeTo = 0;
-        do { changeTo = UnityEngine.Random.Range(0, _tileset.Count); } while (changeTo == _grid[coord.x, coord.y].GetObservedValue());
-        Tile newTile = ReplaceTile(coord, changeTo);
-        //at start
-        PropogateRebalance(coord, new Vector2Int(-1, 0), newTile); //to left
-        PropogateRebalance(coord, new Vector2Int(1, 0), newTile); //to right
-        PropogateRebalance(coord, new Vector2Int(0, -1), newTile); //to down
-        PropogateRebalance(coord, new Vector2Int(0, 1), newTile); //to up
+        do { changeTo = UnityEngine.Random.Range(0, allProtoData.Count); } while (allProtoData[changeTo] == spGrid[coord.x, coord.y].GetObservedValue());
+        Proto.ProtoData newTilePPD = ReplaceTile(coord, allProtoData[changeTo]);
+        
+        //propogate rebalance neightbor start
+        PropogateRebalance(coord, new Vector2Int(-1, 0), newTilePPD); //to left
+        PropogateRebalance(coord, new Vector2Int(1, 0), newTilePPD); //to right
+        PropogateRebalance(coord, new Vector2Int(0, -1), newTilePPD); //to down
+        PropogateRebalance(coord, new Vector2Int(0, 1), newTilePPD); //to up
     }
 
-    public void PropogateRebalance(Vector2Int orgCoord, Vector2Int direction, Tile mustWorkAdjacentTo)
+    public void PropogateRebalance(Vector2Int orgCoord, Vector2Int direction, Proto.ProtoData mustWorkAdjacentTo)
     {
         Vector2Int newCoord = orgCoord + direction;
-        //print("pr " + newCoord);
-
+        
+        //does not exist then return
         if (newCoord.x < 0 || newCoord.y < 0 || newCoord.x >= GRID_WIDTH || newCoord.y >= GRID_HEIGHT) return;
-
-       SuperPosition spToCheck = _grid[newCoord.x, newCoord.y]; 
-
+        
+        SuperPosition spToCheck = spGrid[newCoord.x, newCoord.y]; 
+    
+        
         if (direction == new Vector2Int(0, 1))
         {
-            if (_tileset[spToCheck.GetObservedValue()]._downRoad == mustWorkAdjacentTo._upRoad) return;
+            if(spToCheck.GetObservedValue().front1 == mustWorkAdjacentTo.back2 && 
+                spToCheck.GetObservedValue().front2 == mustWorkAdjacentTo.back1) return;
+            //if (_tileset[spToCheck.GetObservedValue()]._downRoad == mustWorkAdjacentTo._upRoad) return;
         }
         else if (direction == new Vector2Int(1, 0))
         {
-                if (_tileset[spToCheck.GetObservedValue()]._leftRoad == mustWorkAdjacentTo._rightRoad) return;
+            if(spToCheck.GetObservedValue().left1 == mustWorkAdjacentTo.right2 && 
+               spToCheck.GetObservedValue().left2 == mustWorkAdjacentTo.right1) return;
+              //  if (_tileset[spToCheck.GetObservedValue()]._leftRoad == mustWorkAdjacentTo._rightRoad) return;
         }
         else if (direction == new Vector2Int(0, -1))
         {
-                if (_tileset[spToCheck.GetObservedValue()]._upRoad == mustWorkAdjacentTo._downRoad) return;
+            if(spToCheck.GetObservedValue().back1 == mustWorkAdjacentTo.front2 && 
+               spToCheck.GetObservedValue().back2 == mustWorkAdjacentTo.front1) return;
+               // if (_tileset[spToCheck.GetObservedValue()]._upRoad == mustWorkAdjacentTo._downRoad) return;
         }
         else
         {
-                if (_tileset[spToCheck.GetObservedValue()]._rightRoad == mustWorkAdjacentTo._leftRoad) return;
+            if(spToCheck.GetObservedValue().right1 == mustWorkAdjacentTo.left2 && 
+               spToCheck.GetObservedValue().right2 == mustWorkAdjacentTo.left1) return;
+                //if (_tileset[spToCheck.GetObservedValue()]._rightRoad == mustWorkAdjacentTo._leftRoad) return;
         }
 
-        spToCheck.Refill(_tileset.Count);
+        // Need to refill and redo
+        spToCheck.Refill(allProtoData);
 
-        PropogateTo(orgCoord, direction, tileGrid[orgCoord.x, orgCoord.y]);
+        PropogateTo(orgCoord, direction, protoDataGrid[orgCoord.x, orgCoord.y]);
         if (existCell(newCoord + new Vector2Int(-1, 0))) { 
-            PropogateTo(newCoord + new Vector2Int(-1, 0), new Vector2Int(1, 0), tileGrid[(newCoord + new Vector2Int(-1, 0)).x, (newCoord + new Vector2Int(-1, 0)).y]); 
+            PropogateTo(newCoord + new Vector2Int(-1, 0), new Vector2Int(1, 0), protoDataGrid[(newCoord + new Vector2Int(-1, 0)).x, (newCoord + new Vector2Int(-1, 0)).y]); 
         }
         if (existCell(newCoord + new Vector2Int(1, 0))) { 
-            PropogateTo(newCoord + new Vector2Int(1, 0), new Vector2Int(-1, 0), tileGrid[(newCoord + new Vector2Int(1, 0)).x, (newCoord + new Vector2Int(1, 0)).y]); 
+            PropogateTo(newCoord + new Vector2Int(1, 0), new Vector2Int(-1, 0), protoDataGrid[(newCoord + new Vector2Int(1, 0)).x, (newCoord + new Vector2Int(1, 0)).y]); 
         }
         if (existCell(newCoord + new Vector2Int(0, -1))) {
-            PropogateTo(newCoord + new Vector2Int(0, -1), new Vector2Int(0, 1), tileGrid[(newCoord + new Vector2Int(0, -1)).x, (newCoord + new Vector2Int(0, -1)).y]);
+            PropogateTo(newCoord + new Vector2Int(0, -1), new Vector2Int(0, 1), protoDataGrid[(newCoord + new Vector2Int(0, -1)).x, (newCoord + new Vector2Int(0, -1)).y]);
         }
         if (existCell(newCoord + new Vector2Int(0, 1))) { 
-            PropogateTo(newCoord + new Vector2Int(0, 1), new Vector2Int(0, -1), tileGrid[(newCoord + new Vector2Int(0, 1)).x, (newCoord + new Vector2Int(0, 1)).y]);
+            PropogateTo(newCoord + new Vector2Int(0, 1), new Vector2Int(0, -1), protoDataGrid[(newCoord + new Vector2Int(0, 1)).x, (newCoord + new Vector2Int(0, 1)).y]);
         }
         
+        //Deal with remaining possibilities
         if (spToCheck.HasPossibilities())
         {
-            spToCheck.Observe();
+            protoDataGrid[newCoord.x, newCoord.y] = spToCheck.Observe();
+            
             ReplaceTile(newCoord, spToCheck.GetObservedValue());
-
         }
         else
         {
-            spToCheck.Refill(_tileset.Count);
-            PropogateTo(orgCoord, direction, tileGrid[orgCoord.x, orgCoord.y]);
-            spToCheck.Observe();
+            spToCheck.Refill(allProtoData);
+            PropogateTo(orgCoord, direction, protoDataGrid[orgCoord.x, orgCoord.y]);
+            protoDataGrid[newCoord.x, newCoord.y] = spToCheck.Observe();
             ReplaceTile(newCoord, spToCheck.GetObservedValue());
 
-            PropogateRebalance(newCoord, new Vector2Int(-1, 0), tileGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(1, 0), tileGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(0, -1), tileGrid[newCoord.x, newCoord.y]);
-            PropogateRebalance(newCoord, new Vector2Int(0, 1), tileGrid[newCoord.x, newCoord.y]);
+            PropogateRebalance(newCoord, new Vector2Int(-1, 0), protoDataGrid[newCoord.x, newCoord.y]);
+            PropogateRebalance(newCoord, new Vector2Int(1, 0), protoDataGrid[newCoord.x, newCoord.y]);
+            PropogateRebalance(newCoord, new Vector2Int(0, -1), protoDataGrid[newCoord.x, newCoord.y]);
+            PropogateRebalance(newCoord, new Vector2Int(0, 1), protoDataGrid[newCoord.x, newCoord.y]);
         }
 
 
@@ -196,30 +232,44 @@ public class Task1Generator : MonoBehaviour
     }
 
 
-    public Tile ReplaceTile(Vector2Int coord, int t)
+    public Proto.ProtoData ReplaceTile(Vector2Int coord, Proto.ProtoData ppd)
     {
         //print("replacing " + coord);
         Destroy(tileGrid[coord.x, coord.y].gameObject);
 
-        GameObject tile = GameObject.Instantiate(_tileset[t].gameObject);
+        GameObject tile = GameObject.Instantiate(ppd.prefab);
         tile.transform.position = tile.transform.position + new Vector3(coord.x, coord.y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
-        tileGrid[coord.x, coord.y] = tile.GetComponent<Tile>();
-        _grid[coord.x, coord.y].OverrideObserve(t);
-        return tile.GetComponent<Tile>();
+        tileGrid[coord.x, coord.y] = tile;
+        protoDataGrid[coord.x, coord.y] = spGrid[coord.x, coord.y].OverrideObserve(ppd);
+        return ppd;
+    }
+
+    public GameObject SpawnTile(Vector2Int coord, Proto.ProtoData ppd)
+    {
+        GameObject tile = Instantiate(ppd.prefab);
+        tile.transform.position = tile.transform.position + new Vector3(coord.x, coord.y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
+        tile.transform.Rotate(new Vector3(0, 0, -1), 90 * ppd.rotationIndex);
+        tileGrid[coord.x, coord.y] = tile;
+        protoDataGrid[coord.x, coord.y] = ppd;
+        spGrid[coord.x, coord.y].OverrideObserve(ppd);
+        //_grid[coord.x, coord.y].OverrideObserve(t); TODO
+        return tile;
     }
 
     IEnumerator DrawTilesRec()
     {
         int count = 0;
+        /*
         while (count < spawnOrder.Count)
         {
             GameObject tile = GameObject.Instantiate(_tileset[_grid[spawnOrder[count].x, spawnOrder[count].y].GetObservedValue()].gameObject);
             tile.transform.position = tile.transform.position + new Vector3(spawnOrder[count].x, spawnOrder[count].y, 0f) - new Vector3((GRID_WIDTH - 1) / 2f, (GRID_HEIGHT - 1) / 2f, 0f);
-            tileGrid[spawnOrder[count].x, spawnOrder[count].y] = tile.GetComponent<Tile>();
+            tileGrid[spawnOrder[count].x, spawnOrder[count].y] = tile.GetComponent<Proto>();
 
             count++;
             yield return new WaitForSeconds(0.01f);
-        }
+        }*/
+        yield return new WaitForSeconds(0.01f);
     }
 
     bool DoUnobservedNodesExist()
@@ -228,7 +278,7 @@ public class Task1Generator : MonoBehaviour
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
             {
-                if (_grid[x, y].IsObserved() == false) {
+                if (spGrid[x, y].IsObserved() == false) {
                     return true;
                 }
             }
@@ -237,22 +287,23 @@ public class Task1Generator : MonoBehaviour
         return false;
     }
 
-    int Observe(Vector2Int node)
+    Proto.ProtoData Observe(Vector2Int node)
     {
-        spawnOrder.Add(node);
-        return _grid[node.x, node.y].Observe();
+        //spawnOrder.Add(node);
+        return spGrid[node.x, node.y].Observe();
     }
 
 
     private void InitGrid()
     {
-        _grid = new SuperPosition[GRID_WIDTH, GRID_HEIGHT];
-        tileGrid = new Tile[GRID_WIDTH, GRID_HEIGHT];
+        spGrid = new SuperPosition[GRID_WIDTH, GRID_HEIGHT];
+        tileGrid = new GameObject[GRID_WIDTH, GRID_HEIGHT];
+        protoDataGrid = new Proto.ProtoData[GRID_WIDTH, GRID_HEIGHT];
         for (int x = 0; x < GRID_WIDTH; x++)
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
             {
-                _grid[x, y] = new SuperPosition(_tileset.Count);
+                spGrid[x, y] = new SuperPosition(allProtoData);
             }
         }
     }
@@ -260,11 +311,11 @@ public class Task1Generator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /* press r to remake the whole scene
+         //press r to remake the whole scene
         if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }*/
+        }
 
         if (Input.GetKeyDown(KeyCode.Q))RebalanceByInput();
         if (Input.GetKeyDown(KeyCode.W))RebalanceByInput();
@@ -298,15 +349,15 @@ public class Task1Generator : MonoBehaviour
 
     void RebalanceByInput()
     {
-        StartRebalance(tileGrid[Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)]);
+        StartRebalance(protoDataGrid[Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)]);
     }
     
-    void PropogateNeighbors(Vector2Int node, int observedValue)
+    void PropogateNeighbors(Vector2Int node, Proto.ProtoData observedValue)
     {
-        PropogateTo(node, new Vector2Int(-1, 0), _tileset[observedValue]);
-        PropogateTo(node, new Vector2Int(1, 0), _tileset[observedValue]);
-        PropogateTo(node, new Vector2Int(0, -1), _tileset[observedValue]);
-        PropogateTo(node, new Vector2Int(0, 1), _tileset[observedValue]);
+        PropogateTo(node, new Vector2Int(-1, 0), observedValue);
+        PropogateTo(node, new Vector2Int(1, 0), observedValue);
+        PropogateTo(node, new Vector2Int(0, -1), observedValue);
+        PropogateTo(node, new Vector2Int(0, 1), observedValue);
     }
 
     Vector2Int GetOppositeDirection(Vector2Int orgDirection)
@@ -316,7 +367,7 @@ public class Task1Generator : MonoBehaviour
     }
 
 
-    void PropogateTo(Vector2Int node, Vector2Int direction, Tile mustWorkAdjacentTo)
+    void PropogateTo(Vector2Int node, Vector2Int direction, Proto.ProtoData mustWorkAdjacentTo)
     {
         // Your code for 1-c goes here:
 
@@ -326,33 +377,39 @@ public class Task1Generator : MonoBehaviour
         Vector2Int newNode = node + direction;
         if (newNode.x < 0 || newNode.y < 0 || newNode.x >= GRID_WIDTH || newNode.y >= GRID_HEIGHT) return;
         //SuperPosition spOrigional = _grid[node.x, node.y];
-        SuperPosition spToCheck = _grid[newNode.x, newNode.y];
+        SuperPosition spToCheck = spGrid[newNode.x, newNode.y];
         if (spToCheck.IsObserved()) return;
 
         if (direction == new Vector2Int(0, 1))
         {
-            for(int i = 0; i< _tileset.Count; i++)
+            foreach (Proto.ProtoData ppd in allProtoData)
             {
-                if (_tileset[i]._downRoad != mustWorkAdjacentTo._upRoad) spToCheck.RemovePossibleValue(i);
+                if (ppd.front1 != mustWorkAdjacentTo.back2 && ppd.front2 != mustWorkAdjacentTo.back1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else if (direction == new Vector2Int(1, 0)) {
-            for (int i = 0; i < _tileset.Count; i++)
+            foreach (Proto.ProtoData ppd in allProtoData)
             {
-                if (_tileset[i]._leftRoad != mustWorkAdjacentTo._rightRoad) spToCheck.RemovePossibleValue(i);
+                if (ppd.left1 != mustWorkAdjacentTo.right2 && ppd.left2 != mustWorkAdjacentTo.right1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else if (direction == new Vector2Int(0, -1)) {
-            for (int i = 0; i < _tileset.Count; i++)
+            
+            foreach (Proto.ProtoData ppd in allProtoData)
             {
-                if (_tileset[i]._upRoad != mustWorkAdjacentTo._downRoad) spToCheck.RemovePossibleValue(i);
+                if (ppd.back1 != mustWorkAdjacentTo.front2 && ppd.back2 != mustWorkAdjacentTo.front1) spToCheck.RemovePossibleValue(ppd);
             }
         }
         else {
+            foreach (Proto.ProtoData ppd in allProtoData)
+            {
+                if (ppd.right1 != mustWorkAdjacentTo.left2 && ppd.right2 != mustWorkAdjacentTo.left1) spToCheck.RemovePossibleValue(ppd);
+            }
+            /*
             for (int i = 0; i < _tileset.Count; i++)
             {
                 if (_tileset[i]._rightRoad != mustWorkAdjacentTo._leftRoad) spToCheck.RemovePossibleValue(i);
-            }
+            }*/
         }
 
         /*
@@ -376,9 +433,9 @@ public class Task1Generator : MonoBehaviour
         {
             for (int y = 0; y < GRID_HEIGHT; y++)
             {
-                if (!(_grid[x, y].IsObserved()) &&_grid[x, y].NumOptions < minPossibleAmount)
+                if (!(spGrid[x, y].IsObserved()) &&spGrid[x, y].NumOptions < minPossibleAmount)
                 {
-                    minPossibleAmount = _grid[x, y].NumOptions;
+                    minPossibleAmount = spGrid[x, y].NumOptions;
                     minPossibleCoord = new Vector2Int(x, y);
                 }
             }

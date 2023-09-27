@@ -5,50 +5,49 @@ using UnityEngine;
 
 public class SuperPosition
 {
-    List<int> _possibleValues = new List<int>();
+    List<Proto.ProtoData> _possibleValues = new List<Proto.ProtoData>();
     bool _observed = false;
 
-    public SuperPosition(int maxValue)
+    public SuperPosition(List<Proto.ProtoData> allProtoData)
     {
-        for (int i = 0; i < maxValue; i++)
+        foreach (var VARIABLE in allProtoData)
         {
-            _possibleValues.Add(i);
+            _possibleValues.Add(VARIABLE);
         }
     }
 
-    public int GetObservedValue()
+    public Proto.ProtoData GetObservedValue()
     {
         return _possibleValues[0];
     }
 
-    public int Observe()
+    public Proto.ProtoData Observe()
     {
-        // Your code for 1-b goes here:
-
         //pick one of the possible values at random and then remove all other possible values
         //also set _observed to true
         //return the observed value
 
-        int chosenValue = _possibleValues[Random.Range(0,_possibleValues.Count)];
-        _possibleValues = new List<int> { chosenValue};
+        Proto.ProtoData chosenValue = _possibleValues[Random.Range(0,_possibleValues.Count)];
+        _possibleValues = new List<Proto.ProtoData> { chosenValue};
         _observed= true;
 
         return GetObservedValue();
     }
 
-    public void Refill(int maxValue)
+    public void Refill(List<Proto.ProtoData> allProtoData)
     {
         _possibleValues.Clear();
-        for (int i = 0; i < maxValue; i++)
+        foreach (var VARIABLE in allProtoData)
         {
-            _possibleValues.Add(i);
+            _possibleValues.Add(VARIABLE);
         }
         _observed = false;
     }
 
-    public void OverrideObserve(int newValue)
+    public Proto.ProtoData OverrideObserve(Proto.ProtoData ppd)
     {
-        _possibleValues = new List<int> { newValue };
+        _possibleValues = new List<Proto.ProtoData> { ppd };
+        return ppd;
     }
 
     public bool IsObserved()
@@ -56,7 +55,7 @@ public class SuperPosition
         return _observed;
     }
 
-    public void RemovePossibleValue(int value)
+    public void RemovePossibleValue(Proto.ProtoData value)
     {
         _possibleValues.Remove(value);
     }
@@ -66,7 +65,7 @@ public class SuperPosition
         return _possibleValues.Count > 0;
     }
 
-    public List<int> RemainPossibleValues()
+    public List<Proto.ProtoData> RemainPossibleValues()
     {
         return _possibleValues;
     }

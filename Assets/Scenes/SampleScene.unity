@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 445085556}
   - component: {fileID: 445085558}
   m_Layer: 0
-  m_Name: Task1Generator
+  m_Name: Generator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -153,19 +153,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10631bffb2803814fb906577fff6beca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tileset:
-  - {fileID: 584928750006809786, guid: b9e818570d62d514d89f412cfa71baf4, type: 3}
-  - {fileID: 584928750006809786, guid: 6b6810d9145622845b5a663439f22b59, type: 3}
-  - {fileID: 584928750006809786, guid: 38f5ca4d5f8212341badc772d95cdcc5, type: 3}
-  - {fileID: 584928750006809786, guid: 0e56da9f7c2664741b231eaf91cd9ad4, type: 3}
-  - {fileID: 584928750006809786, guid: 596b2f7aea446f24cb4d5401bdac5f6d, type: 3}
-  - {fileID: 584928750006809786, guid: 92cdb7de133d0084a8f32457cb610a33, type: 3}
-  - {fileID: 584928750006809786, guid: 69736c2354168db4881e8bd60363ebbc, type: 3}
-  - {fileID: 584928750006809786, guid: 7c3bdc1e5a5e81d448cc38e3fa27d68a, type: 3}
-  - {fileID: 584928750006809786, guid: eec0730318e188f41bc08f378fe233b5, type: 3}
-  - {fileID: 584928750006809786, guid: e60d6adc543a60c44b7f67332ead2258, type: 3}
-  - {fileID: 584928750006809786, guid: 93888cd6e25457c49b6c47caf4ff2a8d, type: 3}
-  - {fileID: 584928750006809786, guid: ba020376def1959429ff09b28b4980bf, type: 3}
+  allProtoPrefabs:
+  - {fileID: 7498506879014817496, guid: 526ac3094912446cdae7d3e2e7ab9c68, type: 3}
+  - {fileID: 9124525552987179564, guid: ce959684c21c74b93a6dfaba7f08bab0, type: 3}
+  - {fileID: 1761762135605523442, guid: 40c064198bcd54fbfa138058bcd0409c, type: 3}
+  - {fileID: 7314782639276548372, guid: a88eaafe4d1b24ff9a4c515646316225, type: 3}
+  - {fileID: 7588551318687864493, guid: 4a5499389e35b4caaab9d064cab5a7ac, type: 3}
+  - {fileID: 8841358626902306005, guid: 02f354b53b3d447d8a235f437a81b8f9, type: 3}
+  - {fileID: 7082435620320189119, guid: bf10031fa7df248b2bf0c50e7e1c25bd, type: 3}
+  - {fileID: 1560988997116088651, guid: f847778b6f5744cc9bdce014b1a0ffa6, type: 3}
 --- !u!4 &445085557
 Transform:
   m_ObjectHideFlags: 0
