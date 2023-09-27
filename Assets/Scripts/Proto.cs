@@ -12,10 +12,11 @@ public class Proto : MonoBehaviour
     River
     }
     public Adjacency front1, front2, left1, left2, back1, back2, right1, right2;// 
-    public float weight = 1.0f;
+    public int weight = 1;
     public GameObject prefab;
     public float rotationIndex = 0;
-
+    public bool doesNotRotate = false;
+    
     public struct AdjacencySet
     {
         public Adjacency adj1, adj2;
@@ -60,7 +61,24 @@ public class Proto : MonoBehaviour
 
     public List<ProtoData> GetAllProtoDataVariations()
     {
-        return new List<ProtoData>() {new ProtoData(this, 0), new ProtoData(this, 1), new ProtoData(this, 2), new ProtoData(this, 3) };
+        List<ProtoData> returnList = new List<ProtoData>();
+        for (int i = 0; i < weight; i++)
+        {
+            if (doesNotRotate)
+            {
+                returnList.Add(new ProtoData(this, 0));
+            }
+            else
+            {
+                returnList.Add(new ProtoData(this, 0));
+                returnList.Add(new ProtoData(this, 1));
+                returnList.Add(new ProtoData(this, 2));
+                returnList.Add(new ProtoData(this, 3));
+            }
+        }
+
+        return
+            returnList; //new List<ProtoData>() {new ProtoData(this, 0), new ProtoData(this, 1), new ProtoData(this, 2), new ProtoData(this, 3) };
     }
 
     public interface IWeighted
