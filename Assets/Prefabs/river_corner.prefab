@@ -109,3 +109,4 @@ MonoBehaviour:
   prefab: {fileID: 1560988997116088651}
   rotationIndex: 0
   doesNotRotate: 0
+  specialIndex: 0

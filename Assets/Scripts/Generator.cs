@@ -405,18 +405,23 @@ public class Generator : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.B))RebalanceByInput();
         if (Input.GetKeyDown(KeyCode.N))RebalanceByInput();
         if (Input.GetKeyDown(KeyCode.M))RebalanceByInput();
+        
+        if (Input.GetKeyDown(KeyCode.Space))RebalanceByInput();
     }
 
     void RebalanceByInput()
     {
-        Vector2Int toSelect = new Vector2Int(0,0);
-        do
+        int runTimes = 1;//Random.Range(1, 3);
+        for (int i = 0; i < runTimes; i++)
         {
-            toSelect = new Vector2Int(Random.Range(0, GRID_WIDTH), Random.Range(0, GRID_HEIGHT));
-        } while (IsCellUnchangeable(toSelect));
+            Vector2Int toSelect = new Vector2Int(0,0);
+            do
+            {
+                toSelect = new Vector2Int(Random.Range(0, GRID_WIDTH), Random.Range(0, GRID_HEIGHT));
+            } while (IsCellUnchangeable(toSelect));
             
-        StartRebalance(toSelect);
-        //StartRebalance(new Vector2Int(0,0));
+            StartRebalance(toSelect);
+        }
     }
     
     void PropogateNeighbors(Vector2Int node, Proto.ProtoData observedValue)

@@ -10,8 +10,8 @@ public class TextInputManager : MonoBehaviour
     private string currentText = "";
     private float currentWaitTime = 0;
 
-    private float solidWaitTime = 0.3f;
-    private float maxWaitTime = 1f;
+    public float solidWaitTime = 3f;
+    public float maxWaitTime = 4f;
     
     private void Update()
     {
