@@ -105,7 +105,8 @@ MonoBehaviour:
   back2: 1
   right1: 1
   right2: 1
-  weight: 1
+  weight: 3
   prefab: {fileID: 7314782639276548372}
   rotationIndex: 0
   doesNotRotate: 0
+  specialIndex: 0
