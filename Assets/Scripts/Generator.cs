@@ -127,9 +127,19 @@ public class Generator : MonoBehaviour
         }*/
 
         //change that ppd to random
+        
+        spGrid[coord.x, coord.y].Refill(allProtoData);
+
+        if(IsCellUnchangeable(coord + new Vector2Int(-1, 0))) PropogateTo(coord + new Vector2Int(-1, 0), new Vector2Int(1,0), protoDataGrid[(coord + new Vector2Int(-1, 0)).x, (coord + new Vector2Int(-1, 0)).y]);
+        else if(IsCellUnchangeable(coord + new Vector2Int(1, 0))) PropogateTo(coord + new Vector2Int(1, 0), new Vector2Int(-1,0), protoDataGrid[(coord + new Vector2Int(1, 0)).x, (coord + new Vector2Int(1, 0)).y]);
+        else if(IsCellUnchangeable(coord + new Vector2Int(0, 1))) PropogateTo(coord + new Vector2Int(0, 1), new Vector2Int(0,-1), protoDataGrid[(coord + new Vector2Int(0, 1)).x, (coord + new Vector2Int(0, 1)).y]);
+        else if(IsCellUnchangeable(coord + new Vector2Int(0, -1))) PropogateTo(coord + new Vector2Int(0, -1), new Vector2Int(0,1), protoDataGrid[(coord + new Vector2Int(0, -1)).x, (coord + new Vector2Int(0, -1)).y]);
+
+        /*
         int changeTo = 0;
-        do { changeTo = UnityEngine.Random.Range(0, allProtoData.Count); } while (allProtoData[changeTo] == spGrid[coord.x, coord.y].GetObservedValue());
-        Proto.ProtoData newTilePPD = ReplaceTile(coord, allProtoData[changeTo]);
+        do { changeTo = UnityEngine.Random.Range(0, allProtoData.Count); } while (allProtoData[changeTo] == spGrid[coord.x, coord.y].GetObservedValue());*/
+        spGrid[coord.x, coord.y].Observe();
+        Proto.ProtoData newTilePPD = ReplaceTile(coord, spGrid[coord.x, coord.y].GetObservedValue());
         
         //propogate rebalance neightbor start
         PropogateRebalance(coord, new Vector2Int(-1, 0), newTilePPD); //to left
@@ -143,11 +153,11 @@ public class Generator : MonoBehaviour
         Vector2Int newCoord = orgCoord + direction;
         
         //does not exist then return
-        if (newCoord.x < 0 || newCoord.y < 0 || newCoord.x >= GRID_WIDTH || newCoord.y >= GRID_HEIGHT) return;
+        //if (newCoord.x < 0 || newCoord.y < 0 || newCoord.x >= GRID_WIDTH || newCoord.y >= GRID_HEIGHT) return;
+        if(!ExistCellAndCanChange(newCoord))return;
         
-        SuperPosition spToCheck = spGrid[newCoord.x, newCoord.y]; 
-    
-        
+        SuperPosition spToCheck = spGrid[newCoord.x, newCoord.y];
+
         if (direction == new Vector2Int(0, 1))
         {
             if(spToCheck.GetObservedValue().front1 == mustWorkAdjacentTo.back2 && 
@@ -230,14 +240,21 @@ public class Generator : MonoBehaviour
     {
         if (coord.x < 0 || coord.y < 0 || coord.x >= GRID_WIDTH || coord.y >= GRID_HEIGHT) return false;
         //if (Math.Abs(coord.x - (GRID_HEIGHT / 2)) <= 1 || Math.Abs(coord.y - (GRID_WIDTH / 2)) <= 1) return false;
+        if (IsCellUnchangeable(coord)) return false;
+        return true;
+    }
+
+    bool IsCellUnchangeable(Vector2Int coord)
+    {
         for (int x = GRID_WIDTH / 2 - 1; x < GRID_WIDTH / 2 + 2; x++)
         {
             for (int y = GRID_HEIGHT / 2 - 1; y < GRID_HEIGHT / 2 + 2; y++)
             {
-                if (coord.x == x && coord.y == y) return false;
+                if (coord.x == x && coord.y == y) return true;
             }
         }
-        return true;
+
+        return false;
     }
 
 
@@ -391,8 +408,14 @@ public class Generator : MonoBehaviour
     }
 
     void RebalanceByInput()
-    { 
-        StartRebalance(new Vector2Int(Random.Range(0, GRID_WIDTH),Random.Range(0, GRID_HEIGHT)));
+    {
+        Vector2Int toSelect = new Vector2Int(0,0);
+        do
+        {
+            toSelect = new Vector2Int(Random.Range(0, GRID_WIDTH), Random.Range(0, GRID_HEIGHT));
+        } while (IsCellUnchangeable(toSelect));
+            
+        StartRebalance(toSelect);
         //StartRebalance(new Vector2Int(0,0));
     }
     
@@ -409,8 +432,7 @@ public class Generator : MonoBehaviour
         if (orgDirection.x == 0) return new Vector2Int(orgDirection.x, -orgDirection.y);
         return new Vector2Int(-orgDirection.x, orgDirection.y);
     }
-
-
+    
     void PropogateTo(Vector2Int node, Vector2Int direction, Proto.ProtoData mustWorkAdjacentTo)
     {
         // Your code for 1-c goes here:
