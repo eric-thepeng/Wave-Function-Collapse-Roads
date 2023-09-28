@@ -198,8 +198,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textDisplay: {fileID: 2010267740}
-  solidWaitTime: 0.3
-  maxWaitTime: 1
+  solidWaitTime: 1
+  maxWaitTime: 2
 --- !u!1 &465731037
 GameObject:
   m_ObjectHideFlags: 0
